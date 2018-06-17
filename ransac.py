@@ -30,7 +30,7 @@ def get_points(locs1, locs2, matchscores):
             plist.append([[x1,y1],[x2,y2]])
     return plist
 
-def get_homography(points_list):
+def get_homography(plist):
     '''
         Function to quickly compute a homography matrix from all point 
         correspondences.
@@ -141,26 +141,16 @@ def ransac(im1, im2, points_list, iters = 10 , error = 10, good_model_num = 5):
     return model_H
 
 if __name__ == "__main__":
-    try:
-        os.mkdir("temp")
-    except OSError:
-        pass
-
-    try:
-        # Load images from command prompt
-        im1 = Image.open(sys.argv[1])
-        im2 = Image.open(sys.argv[2])
-    except IndexError:
-        print('Usage: python ransac.py image1 image2')
-        sys.exit()
-    im1.convert('L').save('temp/1.pgm')
-    im2.convert('L').save('temp/2.pgm')
+    # Load images from command prompt
+    im1 = Image.open('box.pgm')
+    im2 = Image.open('scene.pgm')
+    im1.convert('L')
+    im2.convert('L')
     im1 = asarray(im1)
     im2 = asarray(im2)
-    process_image('temp/1.pgm', 'temp/1.key')
-    process_image('temp/2.pgm', 'temp/2.key')
-    key1 = read_features_from_file('temp/1.key')
-    key2 = read_features_from_file('temp/2.key')
+
+    key1 = read_features_from_file('box.key')
+    key2 = read_features_from_file('scene.key')
     score = match(key1[1], key2[1])
     plist = get_points(key1[0], key2[0], score)
     plot_matches(im1,im2,key1[0],key2[0],score)
@@ -179,7 +169,6 @@ if __name__ == "__main__":
     im_simple = affine_transform2(im1,
                                   H_simple[:2, :2],
                                   [H_simple[0][2], H_simple[1][2]])
-
     Image.fromarray(im2).show()
-    Image.fromarray(im_ransac).show()
-    Image.fromarray(im_simple).show()
+    Image.fromarray(im_ransac).save('ransac.jpg')
+    Image.fromarray(im_simple).save('simple.jpg')
